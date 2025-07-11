@@ -64,7 +64,7 @@ public class AuthController {
         User savedUser = userRepository.save(createdUser);
 
         Cart cart = new Cart();
-        cart.setUsername(createdUser);
+        cart.setUser(createdUser);
         cartRepository.save(cart);
 
         // ✅ Authenticate user to generate JWT
@@ -78,7 +78,7 @@ public class AuthController {
         authResponse.setMessage("Register success");
         authResponse.setJwt(jwt);
         authResponse.setRole(savedUser.getRole());
-
+        System.out.println(jwt);
         return new ResponseEntity<>(authResponse, HttpStatus.CREATED);
     }
 

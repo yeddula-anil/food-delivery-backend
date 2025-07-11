@@ -13,33 +13,32 @@ import java.util.Optional;
 public class CategoryServiceImpl implements CategoryService {
     @Autowired
     private CategoryRepository categoryRepository;
+
     @Autowired
     private RestaurantService restaurantService;
-    @Autowired
-    private CategoryService categoryService;
 
     @Override
     public Category createCategory(String name, Long userId) throws Exception {
-        Restaurant restaurant=restaurantService.findRestaurantByUserId(userId);
-        Category category=new Category();
+        Restaurant restaurant = restaurantService.findRestaurantByUserId(userId);
+        Category category = new Category();
         category.setName(name);
         category.setRestaurant(restaurant);
         return categoryRepository.save(category);
-
     }
 
     @Override
     public List<Category> findCategoryByRestaurantId(Long restaurantId) throws Exception {
-        Restaurant restaurant=restaurantService.findRestaurantById(restaurantId);
-        return categoryService.findCategoryByRestaurantId(restaurantId);
+        Restaurant restaurant = restaurantService.findRestaurantById(restaurantId);
+        return categoryRepository.findByRestaurant(restaurant); // ✅ direct call to repository
     }
 
     @Override
     public Category findByCategoryId(Long categoryId) throws Exception {
-        Optional<Category> category=categoryRepository.findById(categoryId);
-        if(category.isEmpty()){
+        Optional<Category> category = categoryRepository.findById(categoryId);
+        if (category.isEmpty()) {
             throw new Exception("Category not found");
         }
         return category.get();
     }
 }
+

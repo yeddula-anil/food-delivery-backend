@@ -24,11 +24,16 @@ public class UserServiceImp implements UserService {
 
     @Override
     public User findByJwtToken(String jwtToken) {
-        String email = jwtProvider.getEmailFromJwtToken(jwtToken);
-       User user=userRepository.findByEmail(email);
-       if(user==null){
-           throw new UserNotFoundException("user not found"+email);
-       }
-       return user;
+        try {
+            String email = jwtProvider.getEmailFromJwtToken(jwtToken);
+            User user = userRepository.findByEmail(email);
+            if (user == null) {
+                throw new UserNotFoundException("User not found: " + email);
+            }
+            return user;
+        } catch (Exception e) {
+            throw new RuntimeException("Invalid JWT token", e);
+        }
+
     }
 }

@@ -16,8 +16,11 @@ public class UserController {
     @Autowired
     private  UserService userService;
     @GetMapping("/profile")
-    public ResponseEntity<User> findUserByJwtToken(@RequestHeader("Authorization") String jwt) throws Exception {
-        User user=userService.findByJwtToken(jwt);
+    public ResponseEntity<User> findUserByJwtToken(@RequestHeader("Authorization") String jwtHeader) throws Exception {
+        // ✅ Strip "Bearer " prefix if present
+        String token = jwtHeader.startsWith("Bearer ") ? jwtHeader.substring(7) : jwtHeader;
+
+        User user = userService.findByJwtToken(token);
         return new ResponseEntity<>(user, HttpStatus.OK);
     }
 }

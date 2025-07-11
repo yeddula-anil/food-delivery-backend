@@ -28,7 +28,7 @@ public class AdminRestaurantController {
 
 
     }
-    @PutMapping("/{id}/update")
+    @PutMapping("/{id}")
     public ResponseEntity<Restaurant> updateRestaurant(@RequestBody CreateRestaurantRequest request,
                                                        @RequestHeader("Authorization") String jwt,
                                                        @PathVariable Long id) throws Exception{
@@ -51,8 +51,8 @@ public class AdminRestaurantController {
         Restaurant restaurant=restaurantService.updateRestaurantStatus(id);
         return new ResponseEntity<>(restaurant, HttpStatus.OK);
     }
-    @PutMapping("{id}/user")
-    public ResponseEntity<Restaurant> findRestaurantByUserId(@RequestHeader("Authorization") String jwt,@PathVariable Long id) throws Exception{
+    @GetMapping("/user")
+    public ResponseEntity<Restaurant> findRestaurantByUserId(@RequestHeader("Authorization") String jwt) throws Exception{
         User user=userService.findByJwtToken(jwt);
         Restaurant restaurant=restaurantService.findRestaurantByUserId(user.getId());
         return new ResponseEntity<>(restaurant, HttpStatus.OK);
