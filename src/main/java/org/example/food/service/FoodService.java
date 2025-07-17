@@ -13,7 +13,7 @@ public interface FoodService {
                                          String foodCategory) throws Exception;
     public List<Food> searchFood(String keyword);
     public Food findFoodById(Long id) throws Exception;
-    public Food updateAvailabilityStatus(Long foodId);
+    public Food updateAvailabilityStatus(Long foodId) throws Exception;
 
 
 }

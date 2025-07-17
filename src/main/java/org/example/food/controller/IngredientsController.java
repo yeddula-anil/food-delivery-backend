@@ -1,5 +1,6 @@
 package org.example.food.controller;
 
+import org.apache.tomcat.util.http.parser.Authorization;
 import org.example.food.model.IngredientsCategory;
 import org.example.food.model.IngredientsItems;
 import org.example.food.request.IngredientsCategoryRequest;
@@ -26,26 +27,26 @@ public class IngredientsController {
         return new ResponseEntity<>(item, HttpStatus.CREATED);
     }
     @PostMapping
-    public ResponseEntity<IngredientsItems> createItem(@RequestBody IngredientsItemRequest req) throws Exception{
+    public ResponseEntity<IngredientsItems> createItem(@RequestBody IngredientsItemRequest req,@RequestHeader("Authorization") String jwt) throws Exception{
         IngredientsItems item=ingredientsService.createIngredientItem(req.getRestaurantId(),req.getName(),req.getCategoryId());
         return new ResponseEntity<>(item, HttpStatus.CREATED);
 
 
     }
     @PutMapping("/{id}/stock")
-    public ResponseEntity<IngredientsItems> updateIngredientsStock(@PathVariable Long id) throws Exception{
+    public ResponseEntity<IngredientsItems> updateIngredientsStock(@PathVariable Long id,@RequestHeader("Authorization") String jwt) throws Exception{
         IngredientsItems item=ingredientsService.updateStock(id);
         return new ResponseEntity<>(item, HttpStatus.OK);
 
     }
     @GetMapping("/restaurant/{id}")
-    public ResponseEntity<List<IngredientsItems>> getRestaurantIngredients(@PathVariable Long id) throws Exception{
+    public ResponseEntity<List<IngredientsItems>> getRestaurantIngredients(@PathVariable Long id,@RequestHeader("Authorization") String jwt) throws Exception{
         List<IngredientsItems> items=ingredientsService.findIngredientsItemsByRestaurantId(id);
         return new ResponseEntity<>(items, HttpStatus.OK);
 
     }
     @GetMapping("/restaurant/{id}/category")
-    public ResponseEntity<List<IngredientsCategory>> getRestaurantIngredientsCategory(@PathVariable Long id) throws Exception{
+    public ResponseEntity<List<IngredientsCategory>> getRestaurantIngredientsCategory(@PathVariable Long id,@RequestHeader("Authorization") String jwt) throws Exception{
         List<IngredientsCategory> categories=ingredientsService.findIngredientsCategoryByRestaurantId(id);
         return new ResponseEntity<>(categories, HttpStatus.OK);
     }

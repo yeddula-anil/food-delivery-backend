@@ -1,21 +1,29 @@
 package org.example.food.DTO;
-
-import jakarta.persistence.Column;
-import jakarta.persistence.ElementCollection;
-import jakarta.persistence.Embeddable;
+import org.example.food.model.User;
+import com.fasterxml.jackson.annotation.JsonIgnore;
+import jakarta.persistence.*;
 import lombok.Data;
 
 import java.util.List;
 
 @Data
-@Embeddable
+@Entity
 public class RestaurantDto {
-    private Long id;
+    @Id
+    @GeneratedValue(strategy = GenerationType.AUTO)
+    private Long id; // ✅ 1. Primary Key for this table (FavoriteRestaurant)
+
+    private Long restaurantId; // ✅ 2. This is the ID of the original Restaurant being favorited
+
     private String title;
-    @ElementCollection
-    @Column(length=1000)
-    private List<String> images;
     private String description;
+
+    @ElementCollection
+    private List<String> images;
+
+    @ManyToOne
+    @JsonIgnore
+    private User user;
 
 
 }

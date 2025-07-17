@@ -21,11 +21,17 @@ import java.io.IOException;
 import java.util.Base64;
 import java.util.List;
 
+import static org.aspectj.weaver.tools.cache.SimpleCacheFactory.path;
+
 public class JwtTokenValidator extends OncePerRequestFilter {
     @Override
     protected void doFilterInternal(HttpServletRequest request,
                                     HttpServletResponse response,
                                     FilterChain filterChain) throws ServletException, IOException{
+        if (path.equals("/auth/signup") || path.equals("/auth/signin")) {
+            filterChain.doFilter(request, response);
+            return;
+        }
         String jwt=request.getHeader(JwtConstant.JWT_HEADER);
         if(jwt!=null){
             jwt=jwt.substring(7);

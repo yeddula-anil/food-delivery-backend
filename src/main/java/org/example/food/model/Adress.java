@@ -1,9 +1,6 @@
 package org.example.food.model;
 
-import jakarta.persistence.Entity;
-import jakarta.persistence.GeneratedValue;
-import jakarta.persistence.GenerationType;
-import jakarta.persistence.Id;
+import jakarta.persistence.*;
 import lombok.AllArgsConstructor;
 import lombok.Data;
 import lombok.NoArgsConstructor;
@@ -14,13 +11,16 @@ import lombok.NoArgsConstructor;
 @NoArgsConstructor
 public class Adress {
     @Id
-    @GeneratedValue(strategy = GenerationType.AUTO)
+    @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Long id;
     private String streetAdress;
     private String city;
     private String stateProvince;
     private String postalCode;
     private String country;
+    @ManyToOne
+    @JoinColumn(name = "user_id")  // Adds 'user_id' column in 'adress' table
+    private User user;
 
 
 }

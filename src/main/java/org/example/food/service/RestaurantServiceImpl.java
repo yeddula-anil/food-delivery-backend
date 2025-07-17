@@ -27,11 +27,20 @@ public class RestaurantServiceImpl implements RestaurantService {
 
 
 
+
+
     @Override
     public Restaurant createRestaurant(CreateRestaurantRequest req, User user) {
-        Adress adress =adressRepository.save(req.getAdress());
-        Restaurant restaurant=new Restaurant();
-        restaurant.setAdress(adress);
+        if (req == null || req.getAdress() == null) {
+            throw new IllegalArgumentException("Request or address cannot be null");
+        }
+
+        // Set user inside address
+        Adress address = req.getAdress();
+        address.setUser(user);
+
+        Restaurant restaurant = new Restaurant();
+        restaurant.setAdress(address); // Cascade will save it
         restaurant.setName(req.getName());
         restaurant.setDescription(req.getDescription());
         restaurant.setCuisineType(req.getCuisineType());
@@ -40,10 +49,13 @@ public class RestaurantServiceImpl implements RestaurantService {
         restaurant.setOpeningHours(req.getOpeningHours());
         restaurant.setRegistrationDate(LocalDateTime.now());
         restaurant.setOwner(user);
+
         return restaurantRepository.save(restaurant);
-
-
     }
+
+
+
+
 
     @Override
     public Restaurant updateRestaurant(Long restauarantId, CreateRestaurantRequest updatedRestaurant) throws Exception {
@@ -84,7 +96,7 @@ public class RestaurantServiceImpl implements RestaurantService {
     @Override
     public Restaurant findRestaurantById(Long restaurantId) throws Exception {
         Optional<Restaurant> opt=restaurantRepository.findById(restaurantId);
-       if(opt.isPresent()){
+       if(!opt.isPresent()){
            throw new Exception("no restaurant with that id found");
        }
        return opt.get();
@@ -100,32 +112,33 @@ public class RestaurantServiceImpl implements RestaurantService {
         return restaurant;
     }
 
-    @Override
-    public RestaurantDto addToFavourites(Long restaurantId, User user) throws Exception {
-        Restaurant restaurant = findRestaurantById(restaurantId);
-
-        // Convert to DTO
-        RestaurantDto restaurantDto = new RestaurantDto();
-        restaurantDto.setDescription(restaurant.getDescription());
-        restaurantDto.setImages(restaurant.getImages());
-        restaurantDto.setTitle(restaurant.getName());
-        restaurantDto.setId(restaurantId);
-
-        // Fix: Check if restaurant exists in favourites by ID
-        boolean isAlreadyFavourite = user.getFavourites()
-                .stream()
-                .anyMatch(fav -> fav.getId().equals(restaurantId));
-
-        if (isAlreadyFavourite) {
-            user.getFavourites().removeIf(fav -> fav.getId().equals(restaurantId));
-        } else {
-            user.getFavourites().add(restaurantDto);
-        }
-
-        userRepository.save(user);
-
-        return restaurantDto;
-    }
+//    @Override
+//    public RestaurantDto addToFavourites(Long restaurantId, User user) throws Exception {
+//        Restaurant restaurant = findRestaurantById(restaurantId);
+//
+//        // Convert to DTO
+//        RestaurantDto restaurantDto = new RestaurantDto();
+//        restaurantDto.setDescription(restaurant.getDescription());
+//        restaurantDto.setImages(restaurant.getImages());
+//        restaurantDto.setTitle(restaurant.getName());
+//        restaurantDto.setId(restaurantId);
+//
+//        // Fix: Check if restaurant exists in favourites by ID
+//        boolean isAlreadyFavourite = user.getFavorites()
+//                .stream()
+//                .anyMatch(fav -> fav.getId().equals(restaurantId));
+//
+//        if (isAlreadyFavourite) {
+//            user.getFavorites().removeIf(fav -> fav.getId().equals(restaurantId));
+//        } else {
+//            user.getFavorites().add(restaurantDto);
+//        }
+//
+//        userRepository.save(user);
+//        System.out.println(restaurantDto.getId());
+//
+//        return restaurantDto;
+//    }
 
 
     @Override

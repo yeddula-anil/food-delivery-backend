@@ -31,11 +31,13 @@ public class AppConfig {
                         .sessionCreationPolicy(SessionCreationPolicy.STATELESS)
                 )
                 .authorizeHttpRequests(auth -> auth
-                        .requestMatchers("/auth/signup", "/auth/signin").permitAll()  // ✅ Allow signup and signin
-                        .requestMatchers("/api/admin/**").hasAnyRole("RESTAURANT_OWNER", "ADMIN")
-                        .requestMatchers("/api/**").authenticated()  // ✅ Protect `/api/**`
+                        .requestMatchers("/auth/signup", "/auth/signin").permitAll()
+                        .requestMatchers("/api/admin/**").hasAnyRole("OWNER", "ADMIN") // ✅ Not ROLE_OWNER
+                        .requestMatchers("/api/users/profile").hasAnyRole("CUSTOMER", "OWNER", "ADMIN") // ✅
+                        .requestMatchers("/api/**").authenticated()
                         .anyRequest().permitAll()
                 )
+
                 .addFilterBefore(new JwtTokenValidator(), BasicAuthenticationFilter.class)
                 .csrf(csrf -> csrf.disable())  // ✅ Disable CSRF for API
                 .cors(cors -> cors.configurationSource(corsConfigurationSource));

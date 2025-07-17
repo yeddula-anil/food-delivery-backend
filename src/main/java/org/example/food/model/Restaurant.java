@@ -16,14 +16,14 @@ import java.util.List;
 @AllArgsConstructor
 public class Restaurant {
     @Id
-    @GeneratedValue(strategy = GenerationType.AUTO)
+    @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Long id;
     @OneToOne
     private User owner;
     private String name;
     private String description;
     private String cuisineType;
-    @OneToOne
+    @OneToOne(cascade = CascadeType.ALL)
     private Adress adress;
     @Embedded
     private ContactInformation contactInformation;
