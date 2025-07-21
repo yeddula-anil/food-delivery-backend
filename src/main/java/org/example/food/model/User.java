@@ -1,20 +1,22 @@
 package org.example.food.model;
+import lombok.*;
 import org.example.food.DTO.RestaurantDto;
 import com.fasterxml.jackson.annotation.JsonIgnore;
 import com.fasterxml.jackson.annotation.JsonProperty;
 import jakarta.persistence.*;
-import lombok.AllArgsConstructor;
-import lombok.Data;
-import lombok.NoArgsConstructor;
+
 import java.util.List;
 
 import java.util.ArrayList;
 
 
 @Entity
-@Data
-@AllArgsConstructor
+@Getter
+@Setter
 @NoArgsConstructor
+@AllArgsConstructor
+@EqualsAndHashCode
+@ToString(exclude = {"orders", "favorites", "adresses"})
 
 public class User {
     @Id
@@ -32,7 +34,7 @@ public class User {
     @OneToMany(mappedBy = "user",  cascade = CascadeType.ALL, orphanRemoval = true,fetch = FetchType.EAGER)
     private List<FavoriteRestaurant> favorites=new ArrayList<>();
     @OneToMany(mappedBy = "user", cascade = CascadeType.ALL,orphanRemoval = true)
-    @JsonIgnore
+
     private List<Adress> adresses=new ArrayList<>();
 
 

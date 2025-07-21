@@ -29,12 +29,12 @@ public class CartController {
     @PutMapping("/cart-item/update")
     public ResponseEntity<CartItem> updateCardItemQuantity(@RequestBody UpdateCardItemRequest req,
                                                            @RequestHeader("Authorization") String jwt) throws Exception{
-        CartItem item=cartService.updateCartItemQuantity(req.getCarditemId(),req.getQuantity());
+        CartItem item=cartService.updateCartItemQuantity(req.getCardItemId(),req.getQuantity());
         return new ResponseEntity<>(item, HttpStatus.OK);
     }
     @DeleteMapping("/cart-item/{id}/remove")
     public ResponseEntity<Cart> removeCartItem(@PathVariable Long id,
-                                               @RequestHeader("Authoriation") String jwt) throws Exception{
+                                               @RequestHeader("Authorization") String jwt) throws Exception{
         Cart cart=cartService.removeItemFromCart(id, jwt);
         return new ResponseEntity<>(cart, HttpStatus.OK);
     }

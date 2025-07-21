@@ -44,14 +44,20 @@ public class CartServiceImpl implements CartService {
        cartItem.setQuantity(req.getQuantity());
        cartItem.setIngredients(req.getIngredients());
        cartItem.setTotalprice(req.getQuantity()*food.getPrice());
+       cartItem.setCart(cart);
        CartItem savedItem=cartItemRepository.save(cartItem);
        cart.getItems().add(savedItem);
+       cartRepository.save(cart);
+       System.out.println(cart);
        return savedItem;
     }
 
     @Override
-    public CartItem updateCartItemQuantity(Long cartItemId, int quantity) throws Exception {
-        Optional<CartItem> cartItem=cartItemRepository.findById(cartItemId);
+    public CartItem updateCartItemQuantity(Long cardItemId, int quantity) throws Exception {
+        if (cardItemId == null) {
+            throw new IllegalArgumentException("CartItem ID not be null");
+        }
+        Optional<CartItem> cartItem=cartItemRepository.findById(cardItemId);
         if (cartItem.isEmpty()) {
             throw new Exception("CartItem not found");
         }
@@ -59,6 +65,11 @@ public class CartServiceImpl implements CartService {
         item.setQuantity(quantity);
         item.setTotalprice(item.getFood().getPrice()*quantity);
         CartItem savedItem=cartItemRepository.save(item);
+        //again recalculates the cart total after updating quantity
+        Cart cart = item.getCart();
+        cart.setTotal(calculateCartTotal(cart));
+        cartRepository.save(cart);
+
         return savedItem;
 
     }

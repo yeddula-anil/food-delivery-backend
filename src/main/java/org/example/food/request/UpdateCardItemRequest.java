@@ -4,6 +4,6 @@ import lombok.Data;
 
 @Data
 public class UpdateCardItemRequest {
-    private Long CarditemId;
+    private Long cardItemId;
     private int quantity;
 }

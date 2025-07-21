@@ -1,6 +1,7 @@
 package org.example.food.model;
 
 import com.fasterxml.jackson.annotation.JsonIgnore;
+import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
 import jakarta.persistence.*;
 import lombok.AllArgsConstructor;
 import lombok.Data;
@@ -27,8 +28,9 @@ public class Food {
     @ElementCollection
     private List<String> images;
     private boolean available;
-    @JsonIgnore
+
     @ManyToOne
+    @JsonIgnoreProperties("foods")
     private Restaurant restaurant;
     private boolean isVegetarian;
     private boolean isSeasonal;
