@@ -22,6 +22,7 @@ public class Food {
     private String name;
     private String description;
     private Long price;
+    @JsonIgnore
     @ManyToOne
     private Category foodCategory;
     @Column(length=10000)
@@ -34,7 +35,7 @@ public class Food {
     private Restaurant restaurant;
     private boolean isVegetarian;
     private boolean isSeasonal;
-    @ManyToMany
-    private List<IngredientsItems> ingredients=new ArrayList<>();
+    @OneToMany(mappedBy = "food", cascade = CascadeType.ALL, orphanRemoval = true)
+    private List<IngredientsItems> ingredients = new ArrayList<>();
     private Date creationDate;
 }

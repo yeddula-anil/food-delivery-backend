@@ -15,10 +15,13 @@ public class IngredientsItems {
     @GeneratedValue(strategy = GenerationType.AUTO)
     private Long id;
     private String name;
-    @ManyToOne
-    private IngredientsCategory category;
+    private String category;
     @JsonIgnore
     @ManyToOne
+    private Food food;
+    @JsonIgnore
+    @ManyToOne
+
     private Restaurant restaurant;
     private boolean inStock=true;
 

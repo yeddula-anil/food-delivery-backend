@@ -6,6 +6,7 @@ import org.example.food.request.OrderRequest;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
+import java.time.LocalDateTime;
 import java.util.ArrayList;
 import java.util.Date;
 import java.util.List;
@@ -57,7 +58,11 @@ public class OrderServiceImpl implements OrderService {
         }
         Long totalprice=cartService.calculateCartTotal(cart);
         createdOrder.setItems(orderItems);
+        createdOrder.setOrderStatus(OrderStatus.COMPLETED);
         createdOrder.setTotalprice(totalprice);
+        createdOrder.setOrderDate(LocalDateTime.now());
+        System.out.println("Order status before save: " + createdOrder.getOrderStatus());
+
         Order savedOrder=orderRepository.save(createdOrder);
         restaurant.getOrders().add(savedOrder);
         restaurantRepository.save(restaurant);

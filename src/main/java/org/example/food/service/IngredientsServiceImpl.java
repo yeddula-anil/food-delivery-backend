@@ -1,14 +1,18 @@
 package org.example.food.service;
 
+import org.example.food.model.Food;
 import org.example.food.model.IngredientsCategory;
 import org.example.food.model.IngredientsItems;
 import org.example.food.model.Restaurant;
+import org.example.food.repository.FoodRepository;
 import org.example.food.repository.IngredientsCategoryRepository;
 import org.example.food.repository.IngredientsItemsRepository;
 import org.example.food.repository.RestaurantRepository;
+import org.example.food.request.IngredientsItemRequest;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
+import java.util.ArrayList;
 import java.util.List;
 import java.util.Optional;
 
@@ -20,13 +24,35 @@ public class IngredientsServiceImpl implements IngredientsService {
     private IngredientsItemsRepository ingredientsItemsRepository;
     @Autowired
     private RestaurantService restaurantService;
+    @Autowired
+    private FoodService foodService;
+    @Autowired
+    private FoodRepository foodRepository;
+
     @Override
-    public IngredientsCategory createIngredientCategory(String name, Long restaurantId) throws Exception {
-        Restaurant restaurant=restaurantService.findRestaurantById(restaurantId);
-        IngredientsCategory ingredientsCategory = new IngredientsCategory();
-        ingredientsCategory.setName(name);
-        ingredientsCategory.setRestaurant(restaurant);
-        return ingredientsCategoryRepository.save(ingredientsCategory);
+    public List<IngredientsItems> createIngredients(List<IngredientsItemRequest> req,Restaurant res,Long foodId) throws Exception {
+        List<IngredientsItems> savedItems = new ArrayList<>();
+        Food food = foodService.findFoodById(foodId);
+        if(food==null){
+            throw new Exception("Food not found");
+        }
+
+        for (IngredientsItemRequest item : req) {
+            IngredientsItems ingredient = new IngredientsItems();
+            ingredient.setName(item.getName());
+            ingredient.setCategory(item.getCategory());
+            ingredient.setFood(food);
+
+
+            ingredient.setRestaurant(res);
+            IngredientsItems saved = ingredientsItemsRepository.save(ingredient);
+            savedItems.add(saved);
+            food.getIngredients().add(saved);
+
+
+        }
+        foodRepository.save(food);
+        return savedItems;
     }
 
     @Override
@@ -48,19 +74,6 @@ public class IngredientsServiceImpl implements IngredientsService {
     @Override
     public List<IngredientsItems> findIngredientsItemsByRestaurantId(Long restaurantId) throws Exception {
         return ingredientsItemsRepository.findIngredientsItemsByRestaurantId(restaurantId);
-    }
-
-    @Override
-    public IngredientsItems createIngredientItem(Long restaurantId, String ingredientName, Long categoryId) throws Exception {
-        Restaurant restaurant=restaurantService.findRestaurantById(restaurantId);
-        IngredientsCategory ingredientsCategory=findIngredientsByCategoryId(categoryId);
-        IngredientsItems item=new IngredientsItems();
-        item.setRestaurant(restaurant);
-        item.setName(ingredientName);
-        item.setCategory(ingredientsCategory);
-        IngredientsItems ingredientItem=ingredientsItemsRepository.save(item);
-        ingredientsCategory.getIngredients().add(ingredientItem);
-        return item;
     }
 
     @Override

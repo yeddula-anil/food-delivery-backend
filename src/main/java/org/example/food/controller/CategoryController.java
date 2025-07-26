@@ -2,6 +2,7 @@ package org.example.food.controller;
 
 import org.example.food.model.Category;
 import org.example.food.model.User;
+import org.example.food.request.CreateCategoryRequest;
 import org.example.food.service.CategoryService;
 import org.example.food.service.UserService;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -19,10 +20,10 @@ public class CategoryController {
     @Autowired
     private UserService userService;
     @PostMapping("/admin/category")
-    public ResponseEntity<Category> createCategory(@RequestParam String category,
+    public ResponseEntity<Category> createCategory(@RequestBody CreateCategoryRequest request,
                                                    @RequestHeader("Authorization") String jwt) throws Exception {
         User user=userService.findByJwtToken(jwt);
-        Category createdcategory=categoryService.createCategory(category,user.getId());
+        Category createdcategory=categoryService.createCategory(request.getCategory(),user.getId());
         return new ResponseEntity<>(createdcategory, HttpStatus.CREATED);
     }
     @GetMapping("/category/restaurant/{id}")

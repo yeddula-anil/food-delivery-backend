@@ -1,5 +1,6 @@
 package org.example.food.service;
 
+import org.example.food.model.Category;
 import org.example.food.model.Food;
 import org.example.food.model.Restaurant;
 import org.example.food.repository.FoodRepository;
@@ -17,22 +18,29 @@ public class FoodServiceImpl implements FoodService {
 
     @Autowired
     private FoodRepository foodRepository;
+    @Autowired
+    private CategoryService categoryService;
 
     @Override
-    public Food createFood(CreateFoodRequest request, Restaurant restaurant) {
+    public Food createFood(CreateFoodRequest request, Restaurant restaurant) throws Exception {
+        Category category=categoryService.findByCategoryId(request.getCategoryId());
+        if(category==null){
+            throw new Exception("Category not found");
+        }
         Food f = new Food();
         f.setName(request.getName());
         f.setRestaurant(restaurant);
-        f.setFoodCategory(request.getCategory());
+        f.setFoodCategory(category);
         f.setDescription(request.getDescription());
         f.setPrice(request.getPrice());
-        f.setIngredients(request.getIngredients());
+        f.setAvailable(true);
         f.setSeasonal(request.isSeasonal());
         f.setVegetarian(request.isVegetarian());
         f.setImages(request.getImages());
 
         // 🔥 Set the creation date here
         f.setCreationDate(new Date());
+        System.out.println(f.isAvailable());
 
         return foodRepository.save(f);
     }

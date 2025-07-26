@@ -2,9 +2,11 @@ package org.example.food.service;
 
 import org.example.food.DTO.RestaurantDto;
 import org.example.food.model.Adress;
+import org.example.food.model.FavoriteRestaurant;
 import org.example.food.model.Restaurant;
 import org.example.food.model.User;
 import org.example.food.repository.AdressRepository;
+import org.example.food.repository.FavoriteRestaurantRepository;
 import org.example.food.repository.RestaurantRepository;
 import org.example.food.repository.UserRepository;
 import org.example.food.request.CreateRestaurantRequest;
@@ -12,6 +14,7 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
 import java.time.LocalDateTime;
+import java.util.ArrayList;
 import java.util.List;
 import java.util.Optional;
 
@@ -23,6 +26,8 @@ public class RestaurantServiceImpl implements RestaurantService {
     private UserRepository userRepository;
     @Autowired
     private AdressRepository adressRepository;
+    @Autowired
+    private FavoriteRestaurantRepository favoriteRestaurantRepository;
 
 
 
@@ -112,33 +117,40 @@ public class RestaurantServiceImpl implements RestaurantService {
         return restaurant;
     }
 
-//    @Override
-//    public RestaurantDto addToFavourites(Long restaurantId, User user) throws Exception {
-//        Restaurant restaurant = findRestaurantById(restaurantId);
-//
-//        // Convert to DTO
-//        RestaurantDto restaurantDto = new RestaurantDto();
-//        restaurantDto.setDescription(restaurant.getDescription());
-//        restaurantDto.setImages(restaurant.getImages());
-//        restaurantDto.setTitle(restaurant.getName());
-//        restaurantDto.setId(restaurantId);
-//
-//        // Fix: Check if restaurant exists in favourites by ID
-//        boolean isAlreadyFavourite = user.getFavorites()
-//                .stream()
-//                .anyMatch(fav -> fav.getId().equals(restaurantId));
-//
-//        if (isAlreadyFavourite) {
-//            user.getFavorites().removeIf(fav -> fav.getId().equals(restaurantId));
-//        } else {
-//            user.getFavorites().add(restaurantDto);
-//        }
-//
-//        userRepository.save(user);
-//        System.out.println(restaurantDto.getId());
-//
-//        return restaurantDto;
-//    }
+    @Override
+    public FavoriteRestaurant addToFavorites(Long restaurantId, User user) throws Exception {
+        Restaurant res = findRestaurantById(restaurantId);
+
+        // Check if already favorited
+        Optional<FavoriteRestaurant> existingFav = user.getFavorites()
+                .stream()
+                .filter(fav -> restaurantId.equals(fav.getRestaurantId()))
+                .findFirst();
+
+        if (existingFav.isPresent()) {
+            // Remove from favorites
+            FavoriteRestaurant toRemove = existingFav.get();
+            user.getFavorites().remove(toRemove);
+            favoriteRestaurantRepository.delete(toRemove); // explicitly delete
+            userRepository.save(user);
+            return toRemove;
+        } else {
+            // Add new favorite
+            FavoriteRestaurant restaurant = new FavoriteRestaurant();
+            restaurant.setRestaurantId(res.getId());
+            restaurant.setTitle(res.getName());
+            restaurant.setDescription(res.getDescription());
+            restaurant.setImages(new ArrayList<>(res.getImages())); // ✅ clone list
+            restaurant.setUser(user); // very important
+
+            FavoriteRestaurant savedFav = favoriteRestaurantRepository.save(restaurant);
+            user.getFavorites().add(savedFav);
+            userRepository.save(user);
+
+            return savedFav;
+        }
+    }
+
 
 
     @Override

@@ -7,6 +7,7 @@ import lombok.Data;
 import lombok.NoArgsConstructor;
 import org.example.food.DTO.RestaurantDto;
 
+import java.time.LocalDateTime;
 import java.util.Date;
 import java.util.List;
 
@@ -19,6 +20,7 @@ public class Order {
     @Id
     @GeneratedValue(strategy = GenerationType.AUTO)
     private Long id;
+    @JsonIgnore
     @ManyToOne
     private User customer;
     @JsonIgnore
@@ -28,12 +30,13 @@ public class Order {
     private Date createdAt;
     @Enumerated(EnumType.STRING)
     private OrderStatus orderStatus;
-
+    @JsonIgnore
     @ManyToOne
     private Adress adress;
     @OneToMany
     private List<OrderItem> items;
     private int totalItem;
     private Long totalprice;
+    private LocalDateTime orderDate;
 
 }

@@ -1,10 +1,8 @@
 package org.example.food.controller;
 
-import org.example.food.DTO.RestaurantDto;
 import org.example.food.model.FavoriteRestaurant;
 import org.example.food.model.Restaurant;
 import org.example.food.model.User;
-import org.example.food.service.FavoriteRestaurantService;
 import org.example.food.service.RestaurantService;
 import org.example.food.service.UserService;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -21,8 +19,7 @@ public class RestaurantController {
     RestaurantService restaurantService;
     @Autowired
     private UserService userService;
-    @Autowired
-    private FavoriteRestaurantService favoriteRestaurantService;
+
 
     @GetMapping("/search")
     public ResponseEntity<List<Restaurant>> searchRestaurant(@RequestHeader("Authorization") String jwt,
@@ -48,11 +45,17 @@ public class RestaurantController {
 
     }
     @PutMapping("/{id}/add-to-favorites")
-    public ResponseEntity<FavoriteRestaurant> addToFavourites(@RequestHeader("Authorization") String jwt,@PathVariable("id") Long id) throws Exception{
-        User user=userService.findByJwtToken(jwt);
-        FavoriteRestaurant fr=favoriteRestaurantService.addToFavorites(id,jwt);
-        return new ResponseEntity<>(fr, HttpStatus.OK);
+    public ResponseEntity<?> addToFavourites(@RequestHeader("Authorization") String jwt, @PathVariable("id") Long id) {
+        try {
+            User user = userService.findByJwtToken(jwt);
+            FavoriteRestaurant fr = restaurantService.addToFavorites(id, user);
+            return new ResponseEntity<>(fr, HttpStatus.OK);
+        } catch (Exception e) {
+            e.printStackTrace();  // ✅ This prints full stack trace to your console
+            return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).body(e.getMessage());
+        }
     }
+
 
 
 }

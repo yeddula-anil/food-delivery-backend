@@ -1,5 +1,6 @@
 package org.example.food.controller;
 
+import org.apache.coyote.BadRequestException;
 import org.example.food.model.Food;
 import org.example.food.model.Restaurant;
 import org.example.food.model.User;
@@ -27,7 +28,10 @@ public class AdminFoodController {
     @PostMapping()
     public ResponseEntity<Food> createFood(@RequestBody CreateFoodRequest request, @RequestHeader("Authorization") String jwt) throws Exception {
         User user=userService.findByJwtToken(jwt);
-        Restaurant restaurant=restaurantService.findRestaurantById(request.getRestaurantId());
+        Restaurant restaurant=restaurantService.findRestaurantByUserId(user.getId());
+        if(restaurant==null) {
+            throw new BadRequestException("Restaurant not found");
+        }
         Food food=foodService.createFood(request,restaurant);
         return new ResponseEntity<>(food, HttpStatus.CREATED);
 
@@ -42,10 +46,11 @@ public class AdminFoodController {
         return new ResponseEntity<>(msg, HttpStatus.CREATED);
 
     }
-    @PutMapping("")
+    @PutMapping("/{id}")
     public ResponseEntity<Food> updateFoodAvailabilityStatus(@PathVariable Long id, @RequestHeader("Authorization") String jwt) throws Exception {
         User user=userService.findByJwtToken(jwt);
         Food food=foodService.updateAvailabilityStatus(id);
+
         return new ResponseEntity<>(food, HttpStatus.OK);
 
     }

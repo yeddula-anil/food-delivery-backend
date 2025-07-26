@@ -7,7 +7,7 @@ import org.example.food.request.CreateFoodRequest;
 import java.util.List;
 
 public interface FoodService {
-    public Food createFood(CreateFoodRequest request, Restaurant restaurant);
+    public Food createFood(CreateFoodRequest request, Restaurant restaurant) throws Exception;
     public void deleteFood(Long foodId) throws Exception;
     public List<Food> getRestaurantFoods(Long restaurantId,boolean isVegetarian,boolean isNonVeg,boolean isSeasonal,
                                          String foodCategory) throws Exception;

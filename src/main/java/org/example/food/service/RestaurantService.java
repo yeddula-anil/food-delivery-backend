@@ -1,6 +1,7 @@
 package org.example.food.service;
 
 import org.example.food.DTO.RestaurantDto;
+import org.example.food.model.FavoriteRestaurant;
 import org.example.food.model.Restaurant;
 import org.example.food.model.User;
 import org.example.food.request.CreateRestaurantRequest;
@@ -15,7 +16,7 @@ public interface RestaurantService {
     public List<Restaurant> searchRestaurant(String keyword);
     public Restaurant findRestaurantById(Long restaurantId) throws Exception;
     public Restaurant findRestaurantByUserId(Long userId) throws Exception;
-//    public RestaurantDto addToFavourites(Long restaurantId, User user) throws Exception;
+    public FavoriteRestaurant addToFavorites(Long restaurantId, User user) throws Exception;
     public Restaurant updateRestaurantStatus(Long id) throws Exception;
 
 }
