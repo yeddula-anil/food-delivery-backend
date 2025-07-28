@@ -7,9 +7,7 @@ import java.util.List;
 import java.util.Map;
 @Service
 public interface RevenueService {
-    public List<Map<String, Object>> getRevenueByCategoryList(Long restaurantId);
-    public List<Map<String, Object>> getDailyRevenue(Long restaurantId) ;
-    public List<Map<String, Object>> getMonthlyRevenue(Long restaurantId);
-    public List<Map<String, Object>> getYearlyRevenue(Long restaurantId);
-    public List<RevenueByCategoryDto> getCategoryWiseRevenue(Long restaurantId);
+    public Map<String, Double> getRestaurantRevenue(Long restaurantId);
+    public Map<String, Map<String, Double>> getRestaurantCategoryRevenue(Long restaurantId);
+    public Map<String, Double> getMonthlyRevenueByRestaurant(Long restaurantId);
 }

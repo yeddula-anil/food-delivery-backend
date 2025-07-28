@@ -48,7 +48,8 @@ public class AdminRestaurantController {
     @PutMapping("{id}/status")
     public ResponseEntity<Restaurant> updateRestaurantStatus(@RequestHeader("Authorization") String jwt,@PathVariable Long id) throws Exception{
         User user=userService.findByJwtToken(jwt);
-        Restaurant restaurant=restaurantService.updateRestaurantStatus(id);
+        Restaurant res=restaurantService.findRestaurantById(id);
+        Restaurant restaurant=restaurantService.updateRestaurantStatus(res.getId());
         return new ResponseEntity<>(restaurant, HttpStatus.OK);
     }
     @GetMapping("/user")

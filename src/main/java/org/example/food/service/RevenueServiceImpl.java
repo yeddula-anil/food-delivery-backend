@@ -4,105 +4,104 @@ import org.example.food.DTO.RevenueByCategoryDto;
 import org.example.food.model.Order;
 import org.example.food.model.OrderItem;
 import org.example.food.model.OrderStatus;
+import org.example.food.repository.OrderItemRepository;
 import org.example.food.repository.OrderRepository;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
 import java.time.LocalDate;
+import java.util.*;
 import java.util.stream.Collectors;
 
-import java.util.ArrayList;
-import java.util.HashMap;
-import java.util.List;
-import java.util.Map;
 @Service
 public class RevenueServiceImpl implements RevenueService {
-
     @Autowired
-    OrderRepository orderRepository;
+    private OrderItemRepository orderItemRepository;
     @Override
-    public List<Map<String, Object>> getRevenueByCategoryList(Long restaurantId) {
-        List<Object[]> results = orderRepository.getRevenueByCategory(restaurantId);
-        List<Map<String, Object>> response = new ArrayList<>();
-        for (Object[] row : results) {
-            Map<String, Object> map = new HashMap<>();
-            map.put("category", row[0]);
-            map.put("revenue", row[1]);
-            response.add(map);
-        }
-        return response;
-    }
-
-    @Override
-    public List<Map<String, Object>> getDailyRevenue(Long restaurantId) {
-        List<Object[]> result = orderRepository.getDailyRevenue(restaurantId);
-        return result.stream().map(row -> {
-            Map<String, Object> map = new HashMap<>();
-            map.put("date", row[0]);
-            map.put("revenue", row[1]);
-            return map;
-        }).collect(Collectors.toList());
-    }
-    @Override
-    public List<Map<String, Object>> getMonthlyRevenue(Long restaurantId) {
-        List<Object[]> result = orderRepository.getMonthlyRevenue(restaurantId);
-        return result.stream().map(row -> {
-            Map<String, Object> map = new HashMap<>();
-            map.put("month", row[0]);
-            map.put("year", row[1]);
-            map.put("revenue", row[2]);
-            return map;
-        }).collect(Collectors.toList());
-    }
-    @Override
-    public List<Map<String, Object>> getYearlyRevenue(Long restaurantId) {
-        List<Object[]> result = orderRepository.getYearlyRevenue(restaurantId);
-        return result.stream().map(row -> {
-            Map<String, Object> map = new HashMap<>();
-            map.put("year", row[0]);
-            map.put("revenue", row[1]);
-            return map;
-        }).collect(Collectors.toList());
-    }
-    @Override
-    public List<RevenueByCategoryDto> getCategoryWiseRevenue(Long restaurantId) {
-        List<Order> orders = orderRepository.findByRestaurantIdAndOrderStatus(restaurantId, OrderStatus.COMPLETED);
-
-        Map<String, RevenueByCategoryDto> revenueMap = new HashMap<>();
+    public Map<String, Double> getRestaurantRevenue(Long restaurantId) {
+        List<OrderItem> allOrders = orderItemRepository.findByRestaurantIdAndStatus(restaurantId, OrderStatus.COMPLETED);
 
         LocalDate today = LocalDate.now();
-        int currentMonth = today.getMonthValue();
         int currentYear = today.getYear();
+        int currentMonth = today.getMonthValue();
 
-        for (Order order : orders) {
-            if (order.getItems() == null) continue;
+        double daily = allOrders.stream()
+                .filter(o -> o.getOrderDate().toLocalDate().isEqual(today))
+                .mapToDouble(OrderItem::getTotalPrice)
+                .sum();
 
+        double monthly = allOrders.stream()
+                .filter(o -> o.getOrderDate().getYear() == currentYear &&
+                        o.getOrderDate().getMonthValue() == currentMonth)
+                .mapToDouble(OrderItem::getTotalPrice)
+                .sum();
+
+        double yearly = allOrders.stream()
+                .filter(o -> o.getOrderDate().getYear() == currentYear)
+                .mapToDouble(OrderItem::getTotalPrice)
+                .sum();
+
+        Map<String, Double> revenue = new HashMap<>();
+        revenue.put("daily", daily);
+        revenue.put("monthly", monthly);
+        revenue.put("yearly", yearly);
+        return revenue;
+    }
+
+    @Override
+    public Map<String, Map<String, Double>> getRestaurantCategoryRevenue(Long restaurantId) {
+        List<OrderItem> orders = orderItemRepository.findByRestaurantIdAndStatus(restaurantId, OrderStatus.COMPLETED);
+
+        LocalDate today = LocalDate.now();
+        int currentYear = today.getYear();
+        int currentMonth = today.getMonthValue();
+
+        Map<String, Map<String, Double>> revenue = new HashMap<>();
+        revenue.put("daily", new HashMap<>());
+        revenue.put("monthly", new HashMap<>());
+        revenue.put("yearly", new HashMap<>());
+
+        for (OrderItem order : orders) {
+            String category = order.getFood().getFoodCategory().getName();
+            double price = order.getTotalPrice();
             LocalDate orderDate = order.getOrderDate().toLocalDate();
 
-            for (OrderItem item : order.getItems()) {
-                String category = item.getFood().getFoodCategory().getName();
-                long amount = item.getFood().getPrice() * item.getQuantity();
+            // Daily
+            if (orderDate.isEqual(today)) {
+                revenue.get("daily").merge(category, price, Double::sum);
+            }
 
-                RevenueByCategoryDto dto = revenueMap.getOrDefault(category, new RevenueByCategoryDto(category, 0L, 0L, 0L));
+            // Monthly
+            if (orderDate.getYear() == currentYear && orderDate.getMonthValue() == currentMonth) {
+                revenue.get("monthly").merge(category, price, Double::sum);
+            }
 
-                if (orderDate.isEqual(today)) {
-                    dto.setDailyRevenue(dto.getDailyRevenue() + amount);
-                }
-
-                if (orderDate.getMonthValue() == currentMonth && orderDate.getYear() == currentYear) {
-                    dto.setMonthlyRevenue(dto.getMonthlyRevenue() + amount);
-                }
-
-                if (orderDate.getYear() == currentYear) {
-                    dto.setYearlyRevenue(dto.getYearlyRevenue() + amount);
-                }
-
-                revenueMap.put(category, dto);
+            // Yearly
+            if (orderDate.getYear() == currentYear) {
+                revenue.get("yearly").merge(category, price, Double::sum);
             }
         }
 
-        return new ArrayList<>(revenueMap.values());
+        return revenue;
     }
+
+
+    @Override
+    public Map<String, Double> getMonthlyRevenueByRestaurant(Long restaurantId) {
+        List<Object[]> results = orderItemRepository.getMonthlyRevenueByRestaurant(restaurantId);
+        Map<String, Double> revenueMap = new LinkedHashMap<>();
+
+        for (Object[] row : results) {
+            String month = (String) row[0]; // month name as string
+            Number total = (Number) row[1]; // Safely cast to Number
+            revenueMap.put(month, total.doubleValue()); // convert to double
+        }
+        return revenueMap;
+    }
+
+
+
+
 
 
 

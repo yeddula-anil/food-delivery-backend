@@ -29,8 +29,8 @@ public class User {
     @Enumerated(EnumType.STRING)
     private USER_ROLE role=USER_ROLE.ROLE_CUSTOMER;
     @JsonIgnore
-    @OneToMany(cascade = CascadeType.ALL,mappedBy = "customer")
-    private List<Order> orders=new ArrayList<>();
+    @OneToMany(cascade = CascadeType.ALL,mappedBy = "user")
+    private List<OrderItem> orders=new ArrayList<>();
     @OneToMany(mappedBy = "user",  cascade = CascadeType.ALL, orphanRemoval = true,fetch = FetchType.EAGER)
     private List<FavoriteRestaurant> favorites=new ArrayList<>();
     @OneToMany(mappedBy = "user", cascade = CascadeType.ALL,orphanRemoval = true)

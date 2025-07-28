@@ -31,81 +31,81 @@ public class OrderServiceImpl implements OrderService {
     private CartService cartService;
 
     @Override
-    public Order createOrder(OrderRequest req, User user) throws Exception {
+    public List<OrderItem> createOrder(OrderRequest req, User user) throws Exception {
         Adress shippingAdress=req.getDeliveryAdress();
         Adress savedAdress=adressRepository.save(shippingAdress);
         if(!user.getAdresses().contains(savedAdress)){
             user.getAdresses().add(savedAdress);
             userRepository.save(user);
         }
-        Restaurant restaurant=restaurantService.findRestaurantById(req.getRestaurantId());
-        Order createdOrder=new Order();
-        createdOrder.setRestaurant(restaurant);
-        createdOrder.setCustomer(user);
-        createdOrder.setCreatedAt(new Date());
-        createdOrder.setAdress(savedAdress);
-        createdOrder.setAdress(shippingAdress);
+
+
         Cart cart=cartService.findCartByUserId(user.getId());
         List<OrderItem> orderItems=new ArrayList<OrderItem>();
         for(CartItem cartItem:cart.getItems()){
+            Restaurant restaurant=restaurantService.findRestaurantById(cartItem.getFood().getRestaurant().getId());
+            if(restaurant==null){
+                throw new Exception("Restaurant not found");
+            }
             OrderItem order=new OrderItem();
             order.setFood(cartItem.getFood());
+            order.setUser(cart.getUser());
             order.setQuantity(cartItem.getQuantity());
-            order.setQuantity(cartItem.getQuantity());
-            order.setTotalPrice(cartItem.getTotalprice());
+
+            order.setTotalPrice(cartItem.getFood().getPrice()*cartItem.getQuantity());
+            order.setRestaurant(restaurant);
+            order.setOrderStatus(OrderStatus.COMPLETED);
+            order.setOrderDate(LocalDateTime.now());
+            order.setIngredients(cartItem.getIngredients());
             OrderItem savedOrderItem=orderItemRepository.save(order);
             orderItems.add(savedOrderItem);
-        }
-        Long totalprice=cartService.calculateCartTotal(cart);
-        createdOrder.setItems(orderItems);
-        createdOrder.setOrderStatus(OrderStatus.COMPLETED);
-        createdOrder.setTotalprice(totalprice);
-        createdOrder.setOrderDate(LocalDateTime.now());
-        System.out.println("Order status before save: " + createdOrder.getOrderStatus());
+            restaurant.getOrders().add(order);
+            restaurantRepository.save(restaurant);
 
-        Order savedOrder=orderRepository.save(createdOrder);
-        restaurant.getOrders().add(savedOrder);
-        restaurantRepository.save(restaurant);
-        return savedOrder;
+        }
+        return orderItems;
+
+
+
+
+
 
 
 
     }
 
     @Override
-    public Order updateOrder(Long orderId, String orderStatus) throws Exception {
-        Order order=findOrderById(orderId);
+    public OrderItem updateOrder(Long orderId, String orderStatus) throws Exception {
+        OrderItem order=findOrderById(orderId);
         if(orderStatus.equals("OUT_FOR_DELIVERY") || orderStatus.equals("DELIVERED") || orderStatus.equals("COMPLETED") || orderStatus.equals("PENDING")){
             order.setOrderStatus(OrderStatus.valueOf(orderStatus));
-            return orderRepository.save(order);
+            return orderItemRepository.save(order);
 
         }
         throw new Exception("Invalid order status");
     }
 
     @Override
-    public Order cancelOrder(Long orderId) throws Exception {
-        Order order=findOrderById(orderId);
-        orderRepository.delete(order);
+    public OrderItem cancelOrder(Long orderId) throws Exception {
+        OrderItem order=findOrderById(orderId);
+        orderItemRepository.delete(order);
         return order;
 
     }
-
     @Override
-    public List<Order> getUserOrders(Long userId) throws Exception {
-        return orderRepository.findByCustomerId(userId);
+    public List<OrderItem> getUserOrders(Long userId) {
+        return orderItemRepository.findByUserId(userId);
     }
 
+
     @Override
-    public List<Order> getRestaurantOrders(Long restaurantId, String orderStatus) throws Exception {
-       List<Order> orders=orderRepository.findByRestaurantId(restaurantId);
-       if(orders!=null){
-           orders=orders.stream().filter(order->order.getOrderStatus().equals(orderStatus)).collect(Collectors.toList());
-       }
+    public List<OrderItem> getRestaurantOrders(Long restaurantId) throws Exception {
+       List<OrderItem> orders=orderItemRepository.findByRestaurantId(restaurantId);
+
        return orders;
     }
-    public Order findOrderById(Long orderId) throws Exception {
-        Optional<Order> order=orderRepository.findById(orderId);
+    public OrderItem findOrderById(Long orderId) throws Exception {
+        Optional<OrderItem> order=orderItemRepository.findById(orderId);
         if(order.isEmpty()){
             throw new Exception("Order not found");
         }

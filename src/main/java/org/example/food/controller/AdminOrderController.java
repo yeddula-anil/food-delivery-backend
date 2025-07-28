@@ -1,8 +1,11 @@
 package org.example.food.controller;
 
 import org.example.food.model.Order;
+import org.example.food.model.OrderItem;
+import org.example.food.model.Restaurant;
 import org.example.food.model.User;
 import org.example.food.service.OrderService;
+import org.example.food.service.RestaurantService;
 import org.example.food.service.UserService;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
@@ -18,18 +21,22 @@ public class AdminOrderController {
     private OrderService orderService;
     @Autowired
     private UserService userService;
-    @GetMapping("/order/user/restaurant/{id}")
-    public ResponseEntity<List<Order>> getRestaurantOrder(@PathVariable Long id, @RequestParam(required = false) String orderStatus,
+    @Autowired
+    private RestaurantService restaurantService;
+
+    @GetMapping("/orders/restaurant")
+    public ResponseEntity<List<OrderItem>> getRestaurantOrder(
                                                           @RequestHeader("Authorization")String jwt) throws Exception {
         User user=userService.findByJwtToken(jwt);
-        List<Order> order=orderService.getRestaurantOrders(id, orderStatus);
+        Restaurant res=restaurantService.findRestaurantByUserId(user.getId());
+        List<OrderItem> order=orderService.getRestaurantOrders(res.getId());
         return new ResponseEntity<>(order, HttpStatus.OK);
     }
     @PutMapping("/order/{id}/{orderStatus}")
-    public ResponseEntity<Order> updateOrderStatus(@PathVariable Long id, @PathVariable  String orderStatus,
+    public ResponseEntity<OrderItem> updateOrderStatus(@PathVariable Long id, @PathVariable  String orderStatus,
                                                    @RequestHeader("Authorization") String jwt) throws Exception {
         User user=userService.findByJwtToken(jwt);
-        Order order=orderService.updateOrder(id,orderStatus);
+        OrderItem order=orderService.updateOrder(id,orderStatus);
         return new ResponseEntity<>(order, HttpStatus.OK);
 
 

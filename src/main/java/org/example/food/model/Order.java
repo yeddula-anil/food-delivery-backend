@@ -23,9 +23,9 @@ public class Order {
     @JsonIgnore
     @ManyToOne
     private User customer;
-    @JsonIgnore
-    @ManyToOne
-    private Restaurant restaurant;
+//    @JsonIgnore
+//    @ManyToOne
+//    private Restaurant restaurant;
     private Long totalAmount;
     private Date createdAt;
     @Enumerated(EnumType.STRING)

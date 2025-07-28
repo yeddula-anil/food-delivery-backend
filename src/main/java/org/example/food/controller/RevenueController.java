@@ -1,47 +1,57 @@
 package org.example.food.controller;
 
 import org.example.food.DTO.RevenueByCategoryDto;
+import org.example.food.model.Restaurant;
+import org.example.food.model.User;
+import org.example.food.service.RestaurantService;
 import org.example.food.service.RevenueService;
+import org.example.food.service.UserService;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.stereotype.Controller;
-import org.springframework.web.bind.annotation.GetMapping;
-import org.springframework.web.bind.annotation.PathVariable;
-import org.springframework.web.bind.annotation.RequestMapping;
-import org.springframework.web.bind.annotation.RestController;
+import org.springframework.web.bind.annotation.*;
 
 import java.util.List;
 import java.util.Map;
 
 @RestController
-@RequestMapping("api/admin/revenue")
+@RequestMapping("api/admin")
 public class RevenueController {
     @Autowired
-    RevenueService revenueService;
-    @GetMapping("/{restaurantId}/category")
-    public ResponseEntity<List<Map<String, Object>>> getRevenueByCategory(
-            @PathVariable Long restaurantId) {
-        return ResponseEntity.ok(revenueService.getRevenueByCategoryList(restaurantId));
-    }
-    @GetMapping("/{restaurantId}/daily")
-    public ResponseEntity<List<Map<String, Object>>> getDaily(@PathVariable Long restaurantId) {
-        return ResponseEntity.ok(revenueService.getDailyRevenue(restaurantId));
+    private RevenueService revenueService;
+    @Autowired
+    private UserService userService;
+    @Autowired
+    private RestaurantService restaurantService;
+
+
+    @GetMapping("/restaurant/revenue")
+    public ResponseEntity<Map<String, Double>> getRestaurantRevenue(@RequestHeader("Authorization")  String jwt) throws Exception {
+        User user=userService.findByJwtToken(jwt);
+        Restaurant res=restaurantService.findRestaurantByUserId(user.getId());
+        Map<String, Double> revenue = revenueService.getRestaurantRevenue(res.getId());
+        return new ResponseEntity<>(revenue, HttpStatus.OK);
     }
 
-    @GetMapping("/{restaurantId}/monthly")
-    public ResponseEntity<List<Map<String, Object>>> getMonthly(@PathVariable Long restaurantId) {
-        return ResponseEntity.ok(revenueService.getMonthlyRevenue(restaurantId));
+    @GetMapping("/restaurant/category-revenue")
+    public ResponseEntity<Map<String, Map<String, Double>>> getRestaurantCategoryRevenue(@RequestHeader("Authorization")  String jwt) throws Exception {
+        User user=userService.findByJwtToken(jwt);
+        Restaurant res=restaurantService.findRestaurantByUserId(user.getId());
+        Map<String, Map<String, Double>> revenue = revenueService.getRestaurantCategoryRevenue(res.getId());
+        return new ResponseEntity<>(revenue, HttpStatus.OK);
     }
 
-    @GetMapping("/{restaurantId}/yearly")
-    public ResponseEntity<List<Map<String, Object>>> getYearly(@PathVariable Long restaurantId) {
-        return ResponseEntity.ok(revenueService.getYearlyRevenue(restaurantId));
+    @GetMapping("/revenue/monthly")
+    public ResponseEntity<Map<String, Double>> getMonthlyRevenue(@RequestHeader("Authorization") String jwt) throws Exception {
+        User user=userService.findByJwtToken(jwt);
+        Restaurant res=restaurantService.findRestaurantByUserId(user.getId());
+
+
+        return ResponseEntity.ok(revenueService.getMonthlyRevenueByRestaurant(res.getId()));
     }
-    @GetMapping("/api/revenue/category-wise/{restaurantId}")
-    public ResponseEntity<List<RevenueByCategoryDto>> getRevenueByCategoryWise(
-            @PathVariable Long restaurantId) {
-        return ResponseEntity.ok(revenueService.getCategoryWiseRevenue(restaurantId));
-    }
+
+
 
 
 }

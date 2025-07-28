@@ -31,7 +31,7 @@ public class Food {
     private boolean available;
 
     @ManyToOne
-    @JsonIgnoreProperties("foods")
+    @JsonIgnore
     private Restaurant restaurant;
     private boolean isVegetarian;
     private boolean isSeasonal;
